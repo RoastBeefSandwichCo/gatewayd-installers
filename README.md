@@ -1,7 +1,7 @@
 gatewayd-installers
 ===================
 
-Installation scripts for gatewayd et al.
+Installation scripts for gatewayd et al. In general, based on wiki and documentation already available
 
 ##Notes
   - Ubuntu 14.04
