@@ -127,8 +127,6 @@ cp config-example.json config.json
 sed -i "s/ripple_rest_user:password/db_user_ripple_rest:$db_user_ripple_restPW/g" ./config.json
 export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db
 
-#create SSL certificates
-sudo /etc/init.d/ssl start
 #set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
 sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
@@ -138,6 +136,10 @@ sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
 sudo npm install --global grunt grunt-cli pg
 sudo npm install
 
+#create SSL certificates
+#COPY THE INCLUDED SSL SCRIPT TO /ETC/INIT.D/ AND CHMOD+X
+sudo /etc/init.d/ssl start
+
 
 ##MILESTONE 3! FULL RIPPLE-REST INSTALLATION!!! WOO!
 
@@ -146,7 +148,7 @@ echo '#!/bin/sh' > ~/start-rest.sh
 echo "sudo service postgresql start" >> ~/start-rest.sh
 echo "cd /home/shell_user_gatewayd/gatewayd/ripple-rest" >> ~/start-rest.sh
 echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db" >> ~/start-rest.sh
-echo "sudo -E -u restful /usr/bin/node server.js" >> ~/start-rest.sh
+echo "sudo -E -u restful /usr/bin/node server.js &" >> ~/start-rest.sh
 #NEIN do not use: su - restful -c /usr/bin/node server.js
 #chown restful:restful /usr/bin/start-rest.sh &&
 chmod +x ~/start-rest.sh
@@ -156,6 +158,9 @@ sudo cp ~/start-rest.sh /usr/bin && rm ~/start-rest.sh
 echo '#!/bin/sh' > ~/start-gatewayd.sh
 echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
 echo "export DATABASE_URL=postgres://db_user_gatewayd:Lki1AYjhKsEUJfhSAO4-@localhost:5432/gatewayd_db" >> ~/start-gatewayd.sh
+echo "bin/gateway start" >> ~/start-gatewayd.sh
+echo "#at this writing, gwd must be started twice" >> ~/start-gatewayd.sh
+echo "sleep 10" >> ~/start-gatewayd.sh
 echo "bin/gateway start" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin && rm ~/start-gatewayd.sh
