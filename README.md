@@ -1,7 +1,7 @@
 gatewayd-installers
 ===================
 
-Installation scripts for gatewayd et al. In general, based on wiki and documentation already available.
+Thoroughly tested installation scripts for gatewayd et al. In general, based on wiki and documentation already available.
 
 ##Usage
 
