@@ -13,10 +13,11 @@
 
 #TODO: auto-reconfig script
 
-#Milestone(MS) index:
+#Milestone(MS) index (for images):
 #Milestone 1: system dependencies installed
 #Milestone 2: postgres configured, gatewayd installed and configured
-
+#Milestone 3: Ripple-rest installed and configured
+#Milestone 3.2: startup scripts written
 
 #USERS
 # Define password generator, create user pw
@@ -165,7 +166,10 @@ echo "bin/gateway start" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin && rm ~/start-gatewayd.sh
 #
-##M3.2.2?
+
+#Milestone 3.2 startup scripts added
+
+#From here on out, it gets interactive until we automate more.
 ##start gatewayd, add wallets, currencies (point to our daemon VET THESE COMMANDS
 #If loaded image, postgres and ripple-rest must be running
 #sudo service postgresql start
