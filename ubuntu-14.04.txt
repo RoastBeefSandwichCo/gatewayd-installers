@@ -21,20 +21,24 @@
 #USERS
 # Define password generator, create user pw
 useradd -U -m -r -s /dev/null restful
-useradd -U -m -r shell_user_gatewayd
+useradd -U -m -s /bin/bash shell_user_gatewayd
 adduser shell_user_gatewayd sudo
 
 randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
 shell_user_gatewaydPW=`randpw 20`
 echo "shell_user_gatewayd:$shell_user_gatewaydPW" | chpasswd
 export SHELL_USER_GATEWAYDPW=$shell_user_gatewaydPW
+echo "pw=$shell_user_gatewaydPW"
 su shell_user_gatewayd
 cd ~
 
 #DEPENDENCIES
 # Update the repository sources list
 echo "$SHELL_USER_GATEWAYDPW" | sudo -S apt-get update
+echo "pw=$SHELL_USER_GATEWAYDPW"
+
 unset SHELL_USER_GATEWAYDPW
+#THIS WIPES THE PASSWORD FROM SAVED ENVIRONMENT VARIABLE. Careful.
 
 sudo apt-get install -y git python-software-properties python g++ make libpq-dev software-properties-common postgresql postgresql-client
 #WARNING!WARNING!WARNING!WARNING!WARNING!WARNING!WARNING!
@@ -53,16 +57,18 @@ sudo apt-get -y install nodejs
 #BE IN USER'S HOME! (/home/shell_user_gatewayd/)
 git clone https://github.com/ripple/gatewayd.git
 cd gatewayd/
-git checkout 02eb0fe66c
+#git checkout 02eb0fe66c BROKEN!
+#testing with aaada88
+#git reset --hard aaada88
 #INSTALL gatewayd dependencies, pm2 separately, save
-sudo npm install --global pg grunt grunt-cli forever db-migrate jshint
-sudo npm install --global --unsafe-perm pm2
+sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
 sudo npm install --save
 
 #GATEWAYD HOTFIXES. WHAT YOU MUST DO
 #1) lib/processmanager, line 16 SEE ISSUE 1 Change "processes = {};" to "this.processes = {};"
 #See: https://github.com/ripple/gatewayd/pull/269
-#2) config/config.js, add "process.env['DATABASE_URL'] = nconf.get('DATABASE_URL');" before end (immediately before "module.exports = nconf"line.
+##DONTDOTHIS.suspended.2) config/config.js, add "process.env['DATABASE_URL'] = nconf.get('DATABASE_URL');" before end (immediately before "module.exports = nconf"line.
+
 
 #generate postgresql passwords
 randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
@@ -150,34 +156,46 @@ echo "cd /home/shell_user_gatewayd/gatewayd/ripple-rest" >> ~/start-rest.sh
 echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db" >> ~/start-rest.sh
 echo "sudo -E -u restful /usr/bin/node server.js &" >> ~/start-rest.sh
 chmod +x ~/start-rest.sh
-sudo cp ~/start-rest.sh /usr/bin && rm ~/start-rest.sh
+sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
 
 #CREATE gatewayd startup script
 echo '#!/bin/sh' > ~/start-gatewayd.sh
 echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
+#You should remove this line if you have done: process.env['DATABASE_URL'] = nconf.get('DATABASE_URL'); in your config.js
 echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db" >> ~/start-gatewayd.sh
 echo "bin/gateway start" >> ~/start-gatewayd.sh
-echo "#At time of writing, gwd must be started twice" >> ~/start-gatewayd.sh
-echo "#If you have fixed this, remove the next 2 lines" >> ~/start-gatewayd.sh
+echo "echo 'At time of writing, gatewayd must be started twice'" >> ~/start-gatewayd.sh
+echo "echo 'sleeping 10s'" >> ~/start-gatewayd.sh
+echo "echo 'If you have fixed this, remove these and the next 2 lines'" >> ~/start-gatewayd.sh
 echo "sleep 10" >> ~/start-gatewayd.sh
 echo "bin/gateway start" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
-sudo cp ~/start-gatewayd.sh /usr/bin && rm ~/start-gatewayd.sh
+sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
+
+#CREATE start-all script
+echo '#!/bin/sh' > ~/start-all.sh
+echo "start-rest && start-gatewayd" >> ~/start-all.sh
+chmod +x ~/start-all.sh
+sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
 
 ##MILESTONE 3.2 Startup scripts installed
 
 ##CONFIGURE gatewayd, add wallets, currencies (point to our daemon VET THESE COMMANDS
 #When ready, move this up to gatewayd install section
-
+cd ~/gatewayd
 bin/gateway add_currency USD
 bin/gateway add_currency BTC
 bin/gateway add_currency LTC
 bin/gateway add_currency DOGE
 bin/gateway add_currency PHC
-bin/gateway set_cold_wallet rLWJBRXJFxd5RCyuFsiXd77bMQdPqe1ohu
+bin/gateway set_cold_wallet rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz
+#old rLWJBRXJFxd5RCyuFsiXd77bMQdPqe1ohu
+#cold wallet rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz ssN5m279DWhFw5KjFVBh2ijMwigPc
 bin/gateway generate_wallet
 export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db
-bin/gateway set_hot_wallet rDd4uWGejWShq54da56ce4zyn7TWeiGngT snRv5eL1h4m6RkJhAEzwCjk3yxxiN
+#info:  address=rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3, secret=ssowTc8ba2PG9ADTxuzsD4TBzs34M
+bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxuzsD4TBzs34M
+
 #For obvious reasons, SET YOUR OWN ADDRESSES AND SECRETS! These are examples.
 #NOTE: NEED TO GENERATE THESE DYNAMICALLY
 
@@ -187,3 +205,9 @@ bin/gateway set_hot_wallet rDd4uWGejWShq54da56ce4zyn7TWeiGngT snRv5eL1h4m6RkJhAE
 ##ISSUES:
 ##sed needs better regex so it can change existing passwords
 ##ESRD flags in postgresql create user not working
+
+#FIXES:
+#"hash sum mismatch", try this:
+ #sudo rm -rf /var/lib/apt/lists/*
+ #sudo apt-get update
+ #sudo apt-get clean
