@@ -18,6 +18,10 @@
 #Milestone 2: postgres configured, gatewayd installed and configured
 
 
+#Must begin as root. Very important.
+su root
+cd /
+
 #USERS
 # Define password generator, create user pw
 useradd -U -m -r -s /dev/null restful
