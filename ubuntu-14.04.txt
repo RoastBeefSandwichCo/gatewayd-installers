@@ -141,6 +141,7 @@ sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
 #INSTALL dependencies, run migrations
 sudo npm install --global grunt grunt-cli pg
 sudo npm install
+npm install --save pg
 
 #create SSL certificates
 #COPY THE INCLUDED SSL SCRIPT TO /ETC/INIT.D/ AND CHMOD+X
@@ -174,7 +175,9 @@ sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
 
 #CREATE start-all script
 echo '#!/bin/sh' > ~/start-all.sh
-echo "start-rest && start-gatewayd" >> ~/start-all.sh
+echo "start-rest &" >> ~/start-all.sh
+echo "sleep 10" >> ~/start-all.sh
+echo "start-gatewayd &" >> ~/start-all.sh
 chmod +x ~/start-all.sh
 sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
 
