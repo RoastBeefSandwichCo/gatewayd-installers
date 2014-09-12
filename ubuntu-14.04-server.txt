@@ -1,3 +1,10 @@
+#BEFORE YOU BEGIN!
+#Download the ssl script and "sudo cp <filename> /etc/init.d/ssl"
+#then "sudo chmod +x /etc/init.d/ssl"
+#Alternatively, use your own keys. If you intend to use this "script" as-is, though,
+#you MUST have that and it MUST be executable so keys for your ripple-rest ssl can be generated.
+#The irony here is you can't *enable* ssl or gatewayd will break (for now).
+
 #Dockerfile was breaking on some commands that worked fine in shell.
 #Building image instead, adding re-conf scripts. Or something. Donno. Sleepy.
 
