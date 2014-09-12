@@ -41,7 +41,7 @@ cd ~
 echo "$SHELL_USER_GATEWAYDPW" | sudo -S apt-get update
 echo "pw=$SHELL_USER_GATEWAYDPW"
 
-unset SHELL_USER_GATEWAYDPW
+#unset SHELL_USER_GATEWAYDPW
 #THIS WIPES THE PASSWORD FROM SAVED ENVIRONMENT VARIABLE. Careful.
 
 sudo apt-get install -y git python-software-properties python g++ make libpq-dev software-properties-common postgresql postgresql-client
@@ -56,14 +56,14 @@ sudo apt-get -y install nodejs
 #paste-execution WILL STOP HERE. Pay attention or you'll skip dependencies.
 
 #########Milestone 1: system dependencies installed>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+#make sure SSL script is copied over and made executable
+#also set or export SHELL_USER_GATEWAYDPW
 #Download Gatewayd, use known compatible release
 #BE IN USER'S HOME! (/home/shell_user_gatewayd/)
+cd ~
 git clone https://github.com/ripple/gatewayd.git
 cd gatewayd/
-#git checkout 02eb0fe66c BROKEN!
-#testing with aaada88
-#git reset --hard aaada88
+
 #INSTALL gatewayd dependencies, pm2 separately, save
 sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
 sudo npm install --save
@@ -80,6 +80,23 @@ db_user_postgresPW=`randpw 20`
 db_user_gatewaydPW=`randpw 20`
 db_user_ripple_restPW=`randpw 20`
 
+
+
+#postgres notes
+##
+##sudo su - postgres -c "psql -c \"CREATE ROLE gatewayd NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN;\""
+##sudo su - postgres -c "psql -c \"CREATE USER joe;\""
+##sudo su - postgres -c "psql -c \"GRANT gatewayd to joe;\""
+##sudo su - postgres -c "psql -c \"ALTER USER joe WITH PASSWORD '12345';\""
+##psql -U joe -h localhost
+
+##  -d, --dbname=DBNAME      database name to connect to (default: "shell_user_gatewayd")
+##  -l, --list               list available databases, then exit
+##  -h, --host=HOSTNAME      database server host or socket directory (default: "/var/run/postgresql")
+##  -p, --port=PORT          database server port (default: "5432")
+##  -U, --username=USERNAME  database user name (default: "shell_user_gatewayd")
+##shell_user_gatewayd@0e73a626f902:~/gatewayd$ psql -U joe -d template1 -h localhost
+
 #CONFIGURE postgres, users, DBs
 sudo service postgresql start
 sudo su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$db_user_postgresPW';\""
@@ -90,13 +107,40 @@ sudo su - postgres -c "psql -c \"CREATE DATABASE template1 WITH TEMPLATE = templ
 sudo su - postgres -c "psql -c \"UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template1';\""
 sudo su - postgres -c "psql -c \"\\c template1\""
 sudo su - postgres -c "psql -c \"VACUUM FREEZE;\""
-sudo su - postgres -c "psql -c \"CREATE USER db_user_gatewayd WITH PASSWORD '$db_user_gatewaydPW';\""
+#sudo su - postgres -c "psql -c \"CREATE ROLE db_user_gatewayd WITH PASSWORD '$db_user_gatewaydPW';\""
+#####sudo su - postgres -c "psql -c \"CREATE ROLE db_user_gatewayd WITH PASSWORD '$db_user_gatewaydPW' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN;\""
+
 #FIXME#db_user_ripple_rest should be created with -E -S -R -D flags but they're breaking so...
-sudo su - postgres -c "psql -c \"CREATE USER db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
-sudo su - postgres -c "psql -c \"CREATE DATABASE gatewayd_db WITH OWNER db_user_gatewayd encoding='utf8';\""
-sudo su - postgres -c "psql -c \"CREATE DATABASE ripple_rest_db WITH OWNER db_user_ripple_rest encoding='utf8';\""
-sudo su - postgres -c "psql -c \"GRANT ALL ON DATABASE gatewayd_db TO db_user_gatewayd;\""
-sudo su - postgres -c "psql -c \"GRANT ALL ON DATABASE ripple_rest_db TO db_user_ripple_rest;\""
+#####sudo su - postgres -c "psql -c \"CREATE ROLE db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
+
+
+sudo -u postgres createdb gatewayd_db
+sudo -u postgres createuser db_user_gatewayd -E -S -R -D
+sudo -u postgres psql -c "ALTER USER db_user_ripple_rest PASSWORD '$db_user_gatewaydPW';"
+#sudo psql -U postgres -c "create user db_user_gatewayd with password '$db_user_gatewaydPW'"
+#sudo psql -U postgres -c "create database gatewayd_db with owner db_user_gatewayd encoding='utf8'"
+
+sudo -u postgres createdb ripple_rest_db
+sudo -u postgres createuser db_user_ripple_rest -E -S -R -D
+sudo -u postgres psql -c "ALTER USER db_user_ripple_rest PASSWORD '$db_user_ripple_restPW';"
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#sudo su - postgres -c "psql -c \"CREATE ROLE gatewayd NOSUPERUSER NOCREATEDB NOCREATEROLE LOGIN;\""
+#sudo su - postgres -c "psql -c \"CREATE USER db_user_gatewayd;\""
+#sudo su - postgres -c "psql -c \"CREATE USER db_user_ripple_rest;\""
+#sudo su - postgres -c "psql -c \"GRANT gatewayd to db_user_gatewayd;\""
+#sudo su - postgres -c "psql -c \"GRANT gatewayd to db_user_ripple_rest;\""
+#sudo su - postgres -c "psql -c \"ALTER USER db_user_gatewayd WITH PASSWORD '$db_user_gatewaydPW';\""
+#sudo su - postgres -c "psql -c \"ALTER USER db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
+#
+#sudo su - postgres -c "psql -c \"CREATE DATABASE gatewayd_db WITH OWNER db_user_gatewayd encoding='utf8';\""
+#sudo su - postgres -c "psql -c \"CREATE DATABASE ripple_rest_db WITH OWNER db_user_ripple_rest encoding='utf8';\""
+#
+#sudo su - postgres -c "psql -c \"GRANT ALL ON DATABASE gatewayd_db TO db_user_gatewayd;\""
+#sudo su - postgres -c "psql -c \"GRANT ALL ON DATABASE ripple_rest_db TO db_user_ripple_rest;\""
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db?native=true
 
 #Set users, passwords, DBs in configs
 sed -i "s/postgres:password/db_user_gatewayd:$db_user_gatewaydPW/g" ./config/config.js
@@ -104,40 +148,46 @@ sed -i "s/\/ripple_gateway/\/gatewayd_db/g" ./config/config.js
 cp lib/data/database.example.json lib/data/database.json
 sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
 
+#!!IMPORTANT NOTE:
+#We are using the current master branch of ripple-rest, not 1.0.1 anymore (this may change). The configuration file has CHANGED
+#and other lines must be edited! Specifically "database enabled" must be changed from sqlite to postgresql. Will update this when
+#db is working.
+#See the config file.
 grunt migrate
 
 ######MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 #IF LOADING (Docker) IMAGE FROM HERE YOU DON'T HAVE THE PASSWORDS. Must reset. Use this block.
 #Do NOT use this block if you are running this entire "script" all at once.
-
-#>>>>BEGIN MILESTONE-IMAGE PASSWORD RESETS
-sudo service postgresql start
-randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
-shell_user_gatewaydPW=`randpw 20`
-echo "shell_user_gatewayd:$shell_user_gatewaydPW" | chpasswd
-export SHELL_USER_GATEWAYDPW=$shell_user_gatewaydPW
-su shell_user_gatewayd
-cd ~
-cd gatewayd
-echo $SHELL_USER_GATEWAYDPW
-randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
-db_user_ripple_restPW=`randpw 20`
-echo "$SHELL_USER_GATEWAYDPW" | sudo -S ddddd
-sudo su - postgres -c "psql -c \"ALTER USER db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
+##>>>>BEGIN MILESTONE-IMAGE PASSWORD RESETS
+#sudo service postgresql start
+#randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
+#shell_user_gatewaydPW=`randpw 20`
+#echo "shell_user_gatewayd:$shell_user_gatewaydPW" | chpasswd
+#export SHELL_USER_GATEWAYDPW=$shell_user_gatewaydPW
+#su shell_user_gatewayd
+#cd ~
+#cd gatewayd
+#echo $SHELL_USER_GATEWAYDPW
+#randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
+#db_user_ripple_restPW=`randpw 20`
+#echo "$SHELL_USER_GATEWAYDPW" | sudo -S ddddd
+#sudo su - postgres -c "psql -c \"ALTER USER db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
 #>>>>END MILESTONE-IMAGE PASSWORD RESETS
 
 #INSTALL RIPPLE-REST
 git clone https://github.com/ripple/ripple-rest.git
 cd ripple-rest
 #known working release
-git checkout 1.0.1
+#git checkout 1.0.1
 
 #CONFIGURE ripple-rest
 #store pw in config
 cp config-example.json config.json
 sed -i "s/ripple_rest_user:password/db_user_ripple_rest:$db_user_ripple_restPW/g" ./config.json
-export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db
+sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
+
+#moved#export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db
 #set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
 sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
@@ -158,7 +208,7 @@ sudo /etc/init.d/ssl start
 echo '#!/bin/sh' > ~/start-rest.sh
 echo "sudo service postgresql start" >> ~/start-rest.sh
 echo "cd /home/shell_user_gatewayd/gatewayd/ripple-rest" >> ~/start-rest.sh
-echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db" >> ~/start-rest.sh
+echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db?native=true" >> ~/start-rest.sh
 echo "sudo -E -u restful /usr/bin/node server.js &" >> ~/start-rest.sh
 chmod +x ~/start-rest.sh
 sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
@@ -169,11 +219,11 @@ echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
 #You should remove this line if you have done: process.env['DATABASE_URL'] = nconf.get('DATABASE_URL'); in your config.js
 echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db" >> ~/start-gatewayd.sh
 echo "bin/gateway start" >> ~/start-gatewayd.sh
-echo "echo 'At time of writing, gatewayd must be started twice'" >> ~/start-gatewayd.sh
-echo "echo 'sleeping 10s'" >> ~/start-gatewayd.sh
-echo "echo 'If you have fixed this, remove these and the next 2 lines'" >> ~/start-gatewayd.sh
-echo "sleep 10" >> ~/start-gatewayd.sh
-echo "bin/gateway start" >> ~/start-gatewayd.sh
+#echo "echo 'At time of writing, gatewayd must be started twice'" >> ~/start-gatewayd.sh
+#echo "echo 'sleeping 10s'" >> ~/start-gatewayd.sh
+#echo "echo 'If you have fixed this, remove these and the next 2 lines'" >> ~/start-gatewayd.sh
+#echo "sleep 10" >> ~/start-gatewayd.sh
+#echo "bin/gateway start" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
 
@@ -201,6 +251,7 @@ bin/gateway set_cold_wallet rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz
 bin/gateway generate_wallet
 export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db
 #info:  address=rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3, secret=ssowTc8ba2PG9ADTxuzsD4TBzs34M
+#gatewayd must be running for this command
 bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxuzsD4TBzs34M
 
 #For obvious reasons, SET YOUR OWN ADDRESSES AND SECRETS! These are examples.
