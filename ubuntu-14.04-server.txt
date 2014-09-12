@@ -18,7 +18,7 @@
 #Milestone 2: postgres configured, gatewayd installed and configured
 
 
-#Must begin as root. Very important. 
+#Must begin as root. Very important.
 #By default, root disabled in Ubuntu. Enable by setting root pw.
 #FIXME: change this whole document to sudo instead.
 
@@ -122,7 +122,7 @@ sudo su - postgres -c "psql -c \"VACUUM FREEZE;\""
 
 sudo -u postgres createdb gatewayd_db
 sudo -u postgres createuser db_user_gatewayd -E -S -R -D
-sudo -u postgres psql -c "ALTER USER db_user_ripple_rest PASSWORD '$db_user_gatewaydPW';"
+sudo -u postgres psql -c "ALTER USER db_user_gatewayd PASSWORD '$db_user_gatewaydPW';"
 #sudo psql -U postgres -c "create user db_user_gatewayd with password '$db_user_gatewaydPW'"
 #sudo psql -U postgres -c "create database gatewayd_db with owner db_user_gatewayd encoding='utf8'"
 
