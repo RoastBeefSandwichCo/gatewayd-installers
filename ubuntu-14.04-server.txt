@@ -183,11 +183,6 @@ echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
 #You should remove this line if you have done: process.env['DATABASE_URL'] = nconf.get('DATABASE_URL'); in your config.js
 echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db?native=true" >> ~/start-gatewayd.sh
 echo "bin/gateway start" >> ~/start-gatewayd.sh
-#echo "echo 'At time of writing, gatewayd must be started twice'" >> ~/start-gatewayd.sh
-#echo "echo 'sleeping 10s'" >> ~/start-gatewayd.sh
-#echo "echo 'If you have fixed this, remove these and the next 2 lines'" >> ~/start-gatewayd.sh
-#echo "sleep 10" >> ~/start-gatewayd.sh
-#echo "bin/gateway start" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
 
