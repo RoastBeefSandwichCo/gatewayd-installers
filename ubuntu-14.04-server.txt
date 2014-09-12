@@ -168,6 +168,7 @@ sed -i "s/postgres:password/db_user_gatewayd:$db_user_gatewaydPW/g" ./config/con
 sed -i "s/\/ripple_gateway/\/gatewayd_db/g" ./config/config.js
 cp lib/data/database.example.json lib/data/database.json
 sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
+sed -i "s/@localhost:5432\/gatewayd_db/@localhost:5432\/gatewayd_db?native=true/g" ./config.json
 
 grunt migrate
 
