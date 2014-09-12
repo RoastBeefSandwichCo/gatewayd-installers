@@ -79,6 +79,11 @@ sudo npm install --save
 #See: https://github.com/ripple/gatewayd/pull/269
 ##DONTDOTHIS.suspended.2) config/config.js, add "process.env['DATABASE_URL'] = nconf.get('DATABASE_URL');" before end (immediately before "module.exports = nconf"line.
 
+#MS 1.1 (:dev.1.1)
+su shell_user_gatewayd
+SHELL_USER_GATEWAYDPW="12345"
+echo $SHELL_USER_GATEWAYDPW
+cd ~/gatewayd
 
 #generate postgresql passwords
 randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
@@ -120,15 +125,25 @@ sudo su - postgres -c "psql -c \"VACUUM FREEZE;\""
 #####sudo su - postgres -c "psql -c \"CREATE ROLE db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
 
 
-sudo -u postgres createdb gatewayd_db
-sudo -u postgres createuser db_user_gatewayd -E -S -R -D
-sudo -u postgres psql -c "ALTER USER db_user_gatewayd PASSWORD '$db_user_gatewaydPW';"
+##sudo -u postgres createdb gatewayd_db
+##sudo -u postgres createuser db_user_gatewayd -E -S -R -D
+##sudo -u postgres psql -c "ALTER USER db_user_gatewayd PASSWORD '$db_user_gatewaydPW';"
 #sudo psql -U postgres -c "create user db_user_gatewayd with password '$db_user_gatewaydPW'"
 #sudo psql -U postgres -c "create database gatewayd_db with owner db_user_gatewayd encoding='utf8'"
 
-sudo -u postgres createdb ripple_rest_db
-sudo -u postgres createuser db_user_ripple_rest -E -S -R -D
-sudo -u postgres psql -c "ALTER USER db_user_ripple_rest PASSWORD '$db_user_ripple_restPW';"
+##sudo -u postgres createdb ripple_rest_db
+##sudo -u postgres createuser db_user_ripple_rest -E -S -R -D
+##sudo -u postgres psql -c "ALTER USER db_user_ripple_rest PASSWORD '$db_user_ripple_restPW';"
+
+#sudo psql -U postgres -c "create user db_user_ripple_rest with password 'db_user_ripple_restPW'" -h localhost
+#sudo psql -U postgres -c "create database ripple_rest_db with owner db_user_ripple_rest encoding='utf8'"
+sudo su - postgres -c "psql -c \"create user db_user_ripple_rest with password '$db_user_ripple_restPW';\""
+sudo su - postgres -c "psql -c \"create database ripple_rest_db with owner db_user_ripple_rest encoding='utf8';\""
+sudo su - postgres -c "psql -c \"create user db_user_gatewayd with password '$db_user_gatewaydPW';\""
+sudo su - postgres -c "psql -c \"create database gatewayd_db with owner db_user_gatewayd encoding='utf8';\""
+
+
+
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #sudo su - postgres -c "psql -c \"CREATE ROLE gatewayd NOSUPERUSER NOCREATEDB NOCREATEROLE LOGIN;\""
@@ -154,11 +169,6 @@ sed -i "s/\/ripple_gateway/\/gatewayd_db/g" ./config/config.js
 cp lib/data/database.example.json lib/data/database.json
 sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
 
-#!!IMPORTANT NOTE:
-#We are using the current master branch of ripple-rest, not 1.0.1 anymore (this may change). The configuration file has CHANGED
-#and other lines must be edited! Specifically "database enabled" must be changed from sqlite to postgresql. Will update this when
-#db is working.
-#See the config file.
 grunt migrate
 
 ######MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -185,7 +195,7 @@ grunt migrate
 git clone https://github.com/ripple/ripple-rest.git
 cd ripple-rest
 #known working release
-#git checkout 1.0.1
+git checkout 1.0.1
 
 #CONFIGURE ripple-rest
 #store pw in config
@@ -197,6 +207,13 @@ sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native
 #set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
 sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
+
+
+#!!IMPORTANT NOTE:
+#We are using the current master branch of ripple-rest, not 1.0.1 anymore (this may change). The configuration file has CHANGED
+#and other lines must be edited! Specifically "database enabled" must be changed from sqlite to postgresql. Will update this when
+#db is working.
+#See the config file.
 
 #INSTALL dependencies, run migrations
 sudo npm install --global grunt grunt-cli pg
