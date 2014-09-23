@@ -81,11 +81,6 @@ cd gatewayd/
 sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
 sudo npm install --save
 
-#GATEWAYD HOTFIXES. WHAT YOU MUST DO
-#1) lib/processmanager, line 16 SEE ISSUE 1 Change "processes = {};" to "this.processes = {};"
-#See: https://github.com/ripple/gatewayd/pull/269
-##DONTDOTHIS.suspended.2) config/config.js, add "process.env['DATABASE_URL'] = nconf.get('DATABASE_URL');" before end (immediately before "module.exports = nconf"line.
-
 #MS 1.1 (:dev.1.1)
 su shell_user_gatewayd
 SHELL_USER_GATEWAYDPW="12345"
