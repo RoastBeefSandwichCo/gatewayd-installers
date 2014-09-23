@@ -27,15 +27,16 @@ Must begin as root. Very important.
 By default, root disabled in Ubuntu. Enable by setting root pw.
 FIXME: change this whole document to sudo instead.
 
-sudo passwd
+```sudo passwd
 <enter passwd 2x>
 su root
 <enter passwd>
 cd /
+```
 
 #USERS
 Define password generator, create user pw
-useradd -U -m -r -s /dev/null restful
+```useradd -U -m -r -s /dev/null restful```
 useradd -U -m -s /bin/bash shell_user_gatewayd
 adduser shell_user_gatewayd sudo
 
