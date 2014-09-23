@@ -1,0 +1,6 @@
+README.md formatting
+checkout ripple-rest v1.2.5
+checkout gatewayd v3.27.0
+removed milestone instructions, other docker-only instructions and commentary
+removed obsolete hotfixes (re:lib/processmanager, config.json-database_url
+added changelog

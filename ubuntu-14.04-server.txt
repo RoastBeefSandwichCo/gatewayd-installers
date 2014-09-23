@@ -1,29 +1,27 @@
-#BEFORE YOU BEGIN!
+
+#This is a set of commands used to install gatewayd, ripple-coins and ripple-rest on ubuntu 14.04.1 Server
+#It grew out of an effort to create a dockerfile and docker image of the same
+#As such, some commentary may not make sense in the context of someone just trying to install gatewayd.
+#IMPORTANT NOTE: Most of this you can just copypaste and run. Do it slowly, as some lines will stop execution
+#(like sudo apt-get install -y bunchofstuff).
+
+#Finally: This is NOT a script. If you try to run it as such, it will stop when you change users. Start as root
+#and just run the commands.
+
+##BEFORE YOU BEGIN!
 #Download the ssl script and "sudo cp <filename> /etc/init.d/ssl"
 #then "sudo chmod +x /etc/init.d/ssl"
 #Alternatively, use your own keys. If you intend to use this "script" as-is, though,
 #you MUST have that and it MUST be executable so keys for your ripple-rest ssl can be generated.
 #The irony here is you can't *enable* ssl or gatewayd will break (for now).
 
-#Dockerfile was breaking on some commands that worked fine in shell.
-#Building image instead, adding re-conf scripts. Or something. Donno. Sleepy.
-
-
-#This is a set of commands used to install gatewayd, ripple-coins and ripple-rest on ubuntu 14.04 minimal
-#It grew out of an effort to create a dockerfile and docker image of the same
-#As such, some commentary may not make sense in the context of someone just trying to install gatewayd.
-#IMPORTANT NOTE: Most of this you can just copypaste and run. Do it slowly, as some lines will stop execution
-#(like sudo apt-get install -y bunchofstuff).
-#ALSO: unless you're building onto a milestone docker image, you don't need to run the "LOADING FROM MILESTONE" blocks
-#Finally: This is NOT a script. If you try to run it as such, it will stop when you change users. Start as root
-#and just run the commands.
-
-#TODO: auto-reconfig script
 
 #Milestone(MS) index:
 #Milestone 1: system dependencies installed
 #Milestone 2: postgres configured, gatewayd installed and configured
-
+#Milestone 3: ripple-rest installed, configured
+#Milestone 3.2: startup scripts installed
+#Milestone 3.3: gatewayd additional config (finish, move to MS2)
 
 #Must begin as root. Very important.
 #By default, root disabled in Ubuntu. Enable by setting root pw.
@@ -35,8 +33,8 @@ su root
 #<enter passwd>
 cd /
 
-#USERS
-# Define password generator, create user pw
+##USERS
+#Define password generator, create user pw
 useradd -U -m -r -s /dev/null restful
 useradd -U -m -s /bin/bash shell_user_gatewayd
 adduser shell_user_gatewayd sudo
@@ -49,8 +47,8 @@ echo "pw=$shell_user_gatewaydPW"
 su shell_user_gatewayd
 cd ~
 
-#DEPENDENCIES
-# Update the repository sources list
+##DEPENDENCIES
+#Update the repository sources list
 echo "$SHELL_USER_GATEWAYDPW" | sudo -S apt-get update
 echo "pw=$SHELL_USER_GATEWAYDPW"
 
@@ -68,33 +66,28 @@ sudo apt-get -y install nodejs
 #WARNING!WARNING!WARNING!WARNING!WARNING!WARNING!WARNING!
 #paste-execution WILL STOP HERE. Pay attention or you'll skip dependencies.
 
-#########Milestone 1: system dependencies installed>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+##Milestone 1: system dependencies installed
 #make sure SSL script is copied over and made executable
 #also set or export SHELL_USER_GATEWAYDPW
-#Download Gatewayd, use known compatible release
-#BE IN USER'S HOME! (/home/shell_user_gatewayd/)
+
 cd ~
 git clone https://github.com/ripple/gatewayd.git
 cd gatewayd/
+git checkout cf1281d
+#aka v3.27.0
 
 #INSTALL gatewayd dependencies, pm2 separately, save
 sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
 sudo npm install --save
 
-#MS 1.1 (:dev.1.1)
-su shell_user_gatewayd
-SHELL_USER_GATEWAYDPW="12345"
-echo $SHELL_USER_GATEWAYDPW
-cd ~/gatewayd
 
+#CONFIGURE postgres, users, DBs
 #generate postgresql passwords
 randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
 db_user_postgresPW=`randpw 20`
 db_user_gatewaydPW=`randpw 20`
 db_user_ripple_restPW=`randpw 20`
 
-
-#CONFIGURE postgres, users, DBs
 sudo service postgresql start
 sudo su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$db_user_postgresPW';\""
 #change postgres template: http://stackoverflow.com/questions/16736891/pgerror-error-new-encoding-utf8-is-incompatible
@@ -105,13 +98,10 @@ sudo su - postgres -c "psql -c \"UPDATE pg_database SET datistemplate = TRUE WHE
 sudo su - postgres -c "psql -c \"\\c template1\""
 sudo su - postgres -c "psql -c \"VACUUM FREEZE;\""
 
-
 sudo su - postgres -c "psql -c \"create user db_user_ripple_rest with password '$db_user_ripple_restPW';\""
 sudo su - postgres -c "psql -c \"create database ripple_rest_db with owner db_user_ripple_rest encoding='utf8';\""
 sudo su - postgres -c "psql -c \"create user db_user_gatewayd with password '$db_user_gatewaydPW';\""
 sudo su - postgres -c "psql -c \"create database gatewayd_db with owner db_user_gatewayd encoding='utf8';\""
-
-
 
 export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db?native=true
 
@@ -122,16 +112,15 @@ sed -i "s/@localhost:5432\/gatewayd_db/@localhost:5432\/gatewayd_db?native=true/
 cp lib/data/database.example.json lib/data/database.json
 sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
 
-
 grunt migrate
 
-######MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+##MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED
 
 #INSTALL RIPPLE-REST
 git clone https://github.com/ripple/ripple-rest.git
 cd ripple-rest
-#known working release
-#git checkout 1.0.1
+git checkout 501dba7
+#aka v1.2.5
 
 #CONFIGURE ripple-rest
 #store pw in config
@@ -139,17 +128,9 @@ cp config-example.json config.json
 sed -i "s/ripple_rest_user:password/db_user_ripple_rest:$db_user_ripple_restPW/g" ./config.json
 sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
 
-#moved#export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db
 #set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
 sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
-
-
-#!!IMPORTANT NOTE:
-#We are using the current master branch of ripple-rest, not 1.0.1 anymore (this may change). The configuration file has CHANGED
-#and other lines must be edited! Specifically "database enabled" must be changed from sqlite to postgresql. Will update this when
-#db is working.
-#See the config file.
 
 #INSTALL dependencies, run migrations
 sudo npm install --global grunt grunt-cli pg
@@ -157,9 +138,7 @@ sudo npm install
 npm install --save pg
 
 #create SSL certificates
-#COPY THE INCLUDED SSL SCRIPT TO /ETC/INIT.D/ AND CHMOD+X
 sudo /etc/init.d/ssl start
-
 
 ##MILESTONE 3! FULL RIPPLE-REST INSTALLATION!!! WOO!
 
@@ -175,9 +154,8 @@ sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
 #CREATE gatewayd startup script
 echo '#!/bin/sh' > ~/start-gatewayd.sh
 echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
-#You should remove this line if you have done: process.env['DATABASE_URL'] = nconf.get('DATABASE_URL'); in your config.js
 echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db?native=true" >> ~/start-gatewayd.sh
-echo "bin/gateway start" >> ~/start-gatewayd.sh
+echo "bin/gateway start &" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
 
@@ -191,7 +169,7 @@ sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
 
 ##MILESTONE 3.2 Startup scripts installed
 
-##CONFIGURE gatewayd, add wallets, currencies (point to our daemon VET THESE COMMANDS
+#CONFIGURE gatewayd, add wallets, currencies
 #When ready, move this up to gatewayd install section
 cd ~/gatewayd
 bin/gateway add_currency USD
@@ -200,26 +178,18 @@ bin/gateway add_currency LTC
 bin/gateway add_currency DOGE
 bin/gateway add_currency PHC
 bin/gateway set_cold_wallet rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz
-#old rLWJBRXJFxd5RCyuFsiXd77bMQdPqe1ohu
-#cold wallet rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz ssN5m279DWhFw5KjFVBh2ijMwigPc
+
 bin/gateway generate_wallet
 export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db
-#info:  address=rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3, secret=ssowTc8ba2PG9ADTxuzsD4TBzs34M
-#gatewayd must be running for this command
+#cold wallet address=rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz secret=ssN5m279DWhFw5KjFVBh2ijMwigPc
+#hot wallet:  address=rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3, secret=ssowTc8ba2PG9ADTxuzsD4TBzs34M
+#gatewayd must be running
 bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxuzsD4TBzs34M
 
 #For obvious reasons, SET YOUR OWN ADDRESSES AND SECRETS! These are examples.
 #NOTE: NEED TO GENERATE THESE DYNAMICALLY
 
-
-
-##VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
+##MILESTONE 3.3 additional gatewayd configuration done! (NOT FINISHED)
 ##ISSUES:
-##sed needs better regex so it can change existing passwords
-##ESRD flags in postgresql create user not working
-
-#FIXES:
-#"hash sum mismatch", try this:
- #sudo rm -rf /var/lib/apt/lists/*
- #sudo apt-get update
- #sudo apt-get clean
+#sed needs better regex so it can change existing passwords
+#(just make a configurator script)
