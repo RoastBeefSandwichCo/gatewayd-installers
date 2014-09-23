@@ -1,16 +1,13 @@
 gatewayd-installers
 ===================
 
-Thoroughly tested installation scripts for gatewayd et al. In general, based on wiki and documentation already available.
+Thoroughly tested installation scripts for gatewayd et al. In general, based on wiki and documentation already available. Provides gatewayd, ripple-rest and postgresql instructions. Also automates configuration to a large extent, including password generation and startup script creation.
 
-##Usage
-
-Just open the txt or md corresponding to your distro. Only 14.04 is thoroughly documented atm.
+These instructions *should* work for any Ubuntu distro >= 12.04, but we have only tested on 14.04.1
 
 ##Notes
 **This is a work in progress**
-  - Ubuntu 14.04 Server
-    - Issues 1, 4 for things you MUST address or your installation will not work (also mentioned in the txt)
-    - You need the ssl script.
-    - Currently, postgresql https is not working. You must remove/comment the ssl lines in ripple-rest/config.json
+  - Currently, postgresql https is not working. You must remove/comment the ssl lines in ripple-rest/config.json
 
+##Thanks
+  - @jzlcdh for exhaustive testing and an invaluable stream of useful, productive feedback.
