@@ -7,7 +7,7 @@ These instructions *should* work for any Ubuntu distro >= 12.04, but we have onl
 
 ##Notes
 **This is a work in progress**
-  - Currently, postgresql https is not working. You must remove/comment the ssl lines in ripple-rest/config.json
+  - Currently, gatewayd cannot be configured to use ripple-rest over https. "SSL" in gatewayd/config/config.js must be set to false. The ripple-rest api, however, works fine. I believe this is MY problem and does not reflect an issue in gatewayd.
 
 ##Thanks
   - @jzlcdh for exhaustive testing and an invaluable stream of useful, productive feedback.
