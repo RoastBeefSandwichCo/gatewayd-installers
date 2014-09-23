@@ -8,7 +8,7 @@ IMPORTANT NOTE: Most of this you can just copypaste and run. Do it slowly, as so
 Finally: This is NOT a script. If you try to run it as such, it will stop when you change users. Start as root
 and just run the commands.
 
-#BEFORE YOU BEGIN!
+##BEFORE YOU BEGIN!
 Download the ssl script
 ```
 sudo cp ssl.sh /etc/init.d/ssl
@@ -27,7 +27,7 @@ Milestone 3: ripple-rest installed, configured
 Milestone 3.2: startup scripts installed
 Milestone 3.3: gatewayd additional config (finish, move to MS2)
 
-#USERS
+##USERS
 Define password generator, create user pw
 ```
 sudo useradd -U -m -r -s /dev/null restful
@@ -45,7 +45,7 @@ sudo su shell_user_gatewayd
 cd ~
 ```
 
-#DEPENDENCIES
+##DEPENDENCIES
 Update the repository sources list
 ```
 echo "$SHELL_USER_GATEWAYDPW" | sudo -S apt-get update
@@ -62,7 +62,7 @@ sudo apt-get update
 sudo apt-get -y install nodejs
 ```
 
-#Milestone 1: system dependencies installed
+##Milestone 1: system dependencies installed
 
 ```
 cd ~
@@ -111,7 +111,7 @@ sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localho
 grunt migrate
 ```
 
-#MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED
+##MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED
 ```
 #INSTALL RIPPLE-REST
 git clone https://github.com/ripple/ripple-rest.git
@@ -138,7 +138,7 @@ npm install --save pg
 sudo /etc/init.d/ssl start
 ```
 
-#MILESTONE 3!
+##MILESTONE 3!
 
 FULL RIPPLE-REST INSTALLATION!!! WOO!
 
@@ -169,7 +169,7 @@ chmod +x ~/start-all.sh
 sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
 ```
 
-#MILESTONE 3.2 Startup scripts installed
+##MILESTONE 3.2 Startup scripts installed
 ```
 #CONFIGURE gatewayd, add wallets, currencies
 #When finished, move this up to gatewayd install section
@@ -192,7 +192,7 @@ bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxu
 #NOTE: NEED TO GENERATE THESE DYNAMICALLY
 ```
 
-#MILESTONE 3.3 additional gatewayd configuration done! (NOT FINISHED)
-#ISSUES:
+##MILESTONE 3.3 additional gatewayd configuration done! (NOT FINISHED)
+##ISSUES:
 sed needs better regex so it can change existing passwords
 (just make a configurator script)
