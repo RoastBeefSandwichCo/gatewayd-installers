@@ -10,10 +10,10 @@ and just run the commands.
 
 #BEFORE YOU BEGIN!
 Download the ssl script
-'''
+```
 sudo cp ssl.sh /etc/init.d/ssl
 sudo chmod +x /etc/init.d/ssl
-'''
+```
 
 Alternatively, use your own keys. If you intend to use this "script" as-is, though,
 you MUST have that and it MUST be executable so keys for your ripple-rest ssl can be generated.
@@ -29,7 +29,7 @@ Milestone 3.3: gatewayd additional config (finish, move to MS2)
 
 #USERS
 Define password generator, create user pw
-'''
+```
 sudo useradd -U -m -r -s /dev/null restful
 sudo useradd -U -m -s /bin/bash shell_user_gatewayd
 sudo adduser shell_user_gatewayd sudo
@@ -43,11 +43,11 @@ export SHELL_USER_GATEWAYDPW=$shell_user_gatewaydPW
 echo "pw=$shell_user_gatewaydPW"
 sudo su shell_user_gatewayd
 cd ~
-'''
+```
 
 #DEPENDENCIES
 Update the repository sources list
-'''
+```
 echo "$SHELL_USER_GATEWAYDPW" | sudo -S apt-get update
 echo "pw=$SHELL_USER_GATEWAYDPW"
 
@@ -60,11 +60,11 @@ sudo apt-get install -y git python-software-properties python g++ make libpq-dev
 sudo add-apt-repository -y ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get -y install nodejs
-'''
+```
 
 #Milestone 1: system dependencies installed
 
-'''
+```
 cd ~
 git clone https://github.com/ripple/gatewayd.git
 cd gatewayd/
@@ -109,10 +109,10 @@ sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localho
 
 #run db migrations
 grunt migrate
-'''
+```
 
 #MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED
-'''
+```
 #INSTALL RIPPLE-REST
 git clone https://github.com/ripple/ripple-rest.git
 cd ripple-rest
@@ -136,13 +136,13 @@ npm install --save pg
 
 #create SSL certificates
 sudo /etc/init.d/ssl start
-'''
+```
 
 #MILESTONE 3!
 
 FULL RIPPLE-REST INSTALLATION!!! WOO!
 
-'''
+```
 #CREATE ripple-rest startup script
 echo '#!/bin/sh' > ~/start-rest.sh
 echo "sudo service postgresql start" >> ~/start-rest.sh
@@ -167,10 +167,10 @@ echo "sleep 10" >> ~/start-all.sh
 echo "start-gatewayd &" >> ~/start-all.sh
 chmod +x ~/start-all.sh
 sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
-'''
+```
 
 #MILESTONE 3.2 Startup scripts installed
-'''
+```
 #CONFIGURE gatewayd, add wallets, currencies
 #When finished, move this up to gatewayd install section
 cd ~/gatewayd
@@ -190,7 +190,7 @@ bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxu
 
 #For obvious reasons, SET YOUR OWN ADDRESSES AND SECRETS! These are examples.
 #NOTE: NEED TO GENERATE THESE DYNAMICALLY
-'''
+```
 
 #MILESTONE 3.3 additional gatewayd configuration done! (NOT FINISHED)
 #ISSUES:
