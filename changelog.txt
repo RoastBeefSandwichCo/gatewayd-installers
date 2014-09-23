@@ -1,4 +1,5 @@
-README.md formatting
+ubuntu-14.04-server.txt renamed to ubuntu-14.04-server.md
+ubuntu-14.04-server.txt formatting
 checkout ripple-rest v1.2.5
 checkout gatewayd v3.27.0
 removed milestone instructions, other docker-only instructions and commentary
