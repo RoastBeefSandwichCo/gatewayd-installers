@@ -77,7 +77,7 @@ sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.1
 sudo npm install --save
 
 #CONFIGURE postgres, users, DBs
-generate postgresql passwords
+#generate postgresql passwords
 randpw(){ < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-16};echo;}
 db_user_postgresPW=`randpw 20`
 db_user_gatewaydPW=`randpw 20`
@@ -126,7 +126,7 @@ cp config-example.json config.json
 sed -i "s/ripple_rest_user:password/db_user_ripple_rest:$db_user_ripple_restPW/g" ./config.json
 sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
 
-set key file and path
+#set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
 sed -i "s/.\/certs\/server.crt/\/etc\/ssl\/server.crt/g" ./config.json
 
