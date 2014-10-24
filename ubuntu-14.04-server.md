@@ -39,7 +39,7 @@ shell_user_gatewaydPW=`randpw 20`
 echo "shell_user_gatewayd:$shell_user_gatewaydPW" | sudo chpasswd
 #above command untested, ask @jzlcdh about his experience
 export SHELL_USER_GATEWAYDPW=$shell_user_gatewaydPW
-#BROKEN? At least one user reports variable does not export.
+#BROKEN FIXME exporting variable does not export.
 #Workaround: print the password, copy and use as necessary after changing to user shell_user_gatewayd
 echo "pw=$shell_user_gatewaydPW"
 sudo su shell_user_gatewayd
