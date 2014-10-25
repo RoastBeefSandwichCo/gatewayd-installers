@@ -54,7 +54,7 @@ sudo add-apt-repository -y ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get -y install nodejs
 ```
-##INSTALL && CONFIGURE GATEWAYD AND POSTGRES
+##INSTALL AND CONFIGURE GATEWAYD AND POSTGRES
 
 ```
 cd ~
@@ -94,7 +94,7 @@ sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localho
 grunt migrate
 ```
 
-##MILESTONE2: GWD AND POSTGRES INSTALLED AND CONFIGURED
+##INSTALL AND CONFIGURE RIPPLE-REST
 ```
 #INSTALL RIPPLE-REST
 git clone https://github.com/ripple/ripple-rest.git
