@@ -99,12 +99,12 @@ sudo su - postgres -c "psql -c \"create database ripple_rest_db with owner db_us
 sudo su - postgres -c "psql -c \"create user db_user_gatewayd with password '$db_user_gatewaydPW';\""
 sudo su - postgres -c "psql -c \"create database gatewayd_db with owner db_user_gatewayd encoding='utf8';\""
 
-export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db?native=true
+export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db
 
 #Set users, passwords, DBs in configs
 sed -i "s/postgres:password/db_user_gatewayd:$db_user_gatewaydPW/g" ./config/config.js
 sed -i "s/\/ripple_gateway/\/gatewayd_db/g" ./config/config.js
-sed -i "s/@localhost:5432\/gatewayd_db/@localhost:5432\/gatewayd_db?native=true/g" ./config/config.js
+#FIXME: NO SSL sed -i "s/@localhost:5432\/gatewayd_db/@localhost:5432\/gatewayd_db?native=true/g" ./config/config.js
 cp lib/data/database.example.json lib/data/database.json
 sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
 
@@ -124,7 +124,7 @@ git checkout 501dba7
 #store pw in config
 cp config-example.json config.json
 sed -i "s/ripple_rest_user:password/db_user_ripple_rest:$db_user_ripple_restPW/g" ./config.json
-sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
+#FIXME: NO SSL sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
 
 #set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
@@ -148,7 +148,7 @@ FULL RIPPLE-REST INSTALLATION!!! WOO!
 echo '#!/bin/sh' > ~/start-rest.sh
 echo "sudo service postgresql start" >> ~/start-rest.sh
 echo "cd /home/shell_user_gatewayd/gatewayd/ripple-rest" >> ~/start-rest.sh
-echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db?native=true" >> ~/start-rest.sh
+echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db" >> ~/start-rest.sh
 echo "sudo -E -u restful /usr/bin/node server.js &" >> ~/start-rest.sh
 chmod +x ~/start-rest.sh
 sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
@@ -156,7 +156,7 @@ sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
 #CREATE gatewayd startup script
 echo '#!/bin/sh' > ~/start-gatewayd.sh
 echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
-echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db?native=true" >> ~/start-gatewayd.sh
+echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db" >> ~/start-gatewayd.sh
 echo "bin/gateway start &" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
@@ -169,6 +169,7 @@ echo "start-gatewayd &" >> ~/start-all.sh
 chmod +x ~/start-all.sh
 sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
 ```
+Add "start-all" to an @reboot cron job or run it manually.
 
 ##MILESTONE 3.2 Startup scripts installed
 ```
@@ -194,6 +195,8 @@ bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxu
 ```
 
 ##MILESTONE 3.3 additional gatewayd configuration done! (NOT FINISHED)
-##ISSUES:
+
+##ISSUES/BROKEN:
 sed needs better regex so it can change existing passwords
 (just make a configurator script)
+I have not yet successfully configured this with ssl. Therefore you must ALSO remove the SSL lines from ripple-rest/config.json.
