@@ -17,17 +17,9 @@ sudo chmod +x /etc/init.d/ssl
 
 Alternatively, use your own keys. If you intend to use this "script" as-is, though,
 you MUST have that and it MUST be executable so keys for your ripple-rest ssl can be generated.
-The irony here is you can't *enable* ssl or gatewayd will break (for now).
+I have not yet successfully configured this with ssl. Therefore you must ALSO remove the SSL lines from ripple-rest/config.json. SSL-related instructions are here for future use (and don't break anything).
 
-
-Milestone(MS) index:
-Milestone 1: system dependencies installed
-Milestone 2: postgres configured, gatewayd installed and configured
-Milestone 3: ripple-rest installed, configured
-Milestone 3.2: startup scripts installed
-Milestone 3.3: gatewayd additional config (finish, move to MS2)
-
-##USERS
+##CREATE USERS
 Define password generator, create user pw
 ```
 sudo useradd -U -m -r -s /dev/null restful
@@ -46,7 +38,7 @@ sudo su shell_user_gatewayd
 cd ~
 ```
 
-##DEPENDENCIES
+##INSTALL DEPENDENCIES
 Update the repository sources list
 ```
 echo "$SHELL_USER_GATEWAYDPW" | sudo -S apt-get update
@@ -62,8 +54,7 @@ sudo add-apt-repository -y ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get -y install nodejs
 ```
-
-##Milestone 1: system dependencies installed
+##INSTALL && CONFIGURE GATEWAYD AND POSTGRES
 
 ```
 cd ~
@@ -85,19 +76,10 @@ db_user_ripple_restPW=`randpw 20`
 
 sudo service postgresql start
 sudo su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$db_user_postgresPW';\""
-#change postgres template: http://stackoverflow.com/questions/16736891/pgerror-error-new-encoding-utf8-is-incompatible
-#this may not be necessary for all users but it's not known to cause problems
-sudo su - postgres -c "psql -c \"UPDATE pg_database SET datistemplate = FALSE WHERE datname = 'template1';\""
-sudo su - postgres -c "psql -c \"DROP DATABASE template1;\""
-sudo su - postgres -c "psql -c \"CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UNICODE';\""
-sudo su - postgres -c "psql -c \"UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template1';\""
-sudo su - postgres -c "psql -c \"\\c template1\""
-sudo su - postgres -c "psql -c \"VACUUM FREEZE;\""
-#end template fix
-sudo su - postgres -c "psql -c \"create user db_user_ripple_rest with password '$db_user_ripple_restPW';\""
-sudo su - postgres -c "psql -c \"create database ripple_rest_db with owner db_user_ripple_rest encoding='utf8';\""
-sudo su - postgres -c "psql -c \"create user db_user_gatewayd with password '$db_user_gatewaydPW';\""
-sudo su - postgres -c "psql -c \"create database gatewayd_db with owner db_user_gatewayd encoding='utf8';\""
+sudo su - postgres -c "psql -c \"CREATE USER db_user_ripple_rest WITH PASSWORD '$db_user_ripple_restPW';\""
+sudo su - postgres -c "psql -c \"CREATE DATABASE ripple_rest_db WITH OWNER db_user_ripple_rest encoding='utf8';\""
+sudo su - postgres -c "psql -c \"CREATE USER db_user_gatewayd WITH PASSWORD '$db_user_gatewaydPW';\""
+sudo su - postgres -c "psql -c \"CREATE DATABASE gatewayd_db WITH OWNER db_user_gatewayd encoding='utf8';\""
 
 export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db
 
@@ -139,9 +121,7 @@ npm install --save pg
 sudo /etc/init.d/ssl start
 ```
 
-##MILESTONE 3!
-
-FULL RIPPLE-REST INSTALLATION!!! WOO!
+##CREATE AND INSTALL STARTUP SCRIPTS
 
 ```
 #CREATE ripple-rest startup script
@@ -169,13 +149,14 @@ echo "start-gatewayd &" >> ~/start-all.sh
 chmod +x ~/start-all.sh
 sudo cp ~/start-all.sh /usr/bin/start-all && rm ~/start-all.sh
 ```
-Add "start-all" to an @reboot cron job or run it manually.
+"start-all" can be added as a @reboot cron job or run manually.
 
-##MILESTONE 3.2 Startup scripts installed
+##ADDITIONAL GATEWAYD CONFIGURATION (wallets, currencies)
 ```
 #CONFIGURE gatewayd, add wallets, currencies
 #When finished, move this up to gatewayd install section
 cd ~/gatewayd
+#add some example currencies
 bin/gateway add_currency USD
 bin/gateway add_currency BTC
 bin/gateway add_currency LTC
@@ -187,16 +168,14 @@ bin/gateway generate_wallet
 export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db
 #cold wallet address=rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz secret=ssN5m279DWhFw5KjFVBh2ijMwigPc
 #hot wallet:  address=rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3, secret=ssowTc8ba2PG9ADTxuzsD4TBzs34M
-gatewayd must be running
+#gatewayd must be running?
 bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxuzsD4TBzs34M
 
 #For obvious reasons, SET YOUR OWN ADDRESSES AND SECRETS! These are examples.
 #NOTE: NEED TO GENERATE THESE DYNAMICALLY
 ```
 
-##MILESTONE 3.3 additional gatewayd configuration done! (NOT FINISHED)
-
 ##ISSUES/BROKEN:
 sed needs better regex so it can change existing passwords
 (just make a configurator script)
-I have not yet successfully configured this with ssl. Therefore you must ALSO remove the SSL lines from ripple-rest/config.json.
+
