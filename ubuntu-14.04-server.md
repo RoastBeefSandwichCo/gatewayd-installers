@@ -17,7 +17,7 @@ sudo chmod +x /etc/init.d/ssl
 
 Alternatively, use your own keys. If you intend to use this "script" as-is, though,
 you MUST have that and it MUST be executable so keys for your ripple-rest ssl can be generated.
-I have not yet successfully configured this with ssl. Therefore you must ALSO remove the SSL lines from ripple-rest/config.json. SSL-related instructions are here for future use (and don't break anything).
+SSL: updates soon to enable ssl
 
 ##CREATE USERS
 Define password generator, create user pw
@@ -106,7 +106,7 @@ git checkout 501dba7
 #store pw in config
 cp config-example.json config.json
 sed -i "s/ripple_rest_user:password/db_user_ripple_rest:$db_user_ripple_restPW/g" ./config.json
-#FIXME: NO SSL sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
+sed -i "s/@localhost:5432\/ripple_rest_db/@localhost:5432\/ripple_rest_db?native=true/g" ./config.json
 
 #set key file and path
 sed -i "s/.\/certs\/server.key/\/etc\/ssl\/server.key/g" ./config.json
@@ -128,7 +128,7 @@ sudo /etc/init.d/ssl start
 echo '#!/bin/sh' > ~/start-rest.sh
 echo "sudo service postgresql start" >> ~/start-rest.sh
 echo "cd /home/shell_user_gatewayd/gatewayd/ripple-rest" >> ~/start-rest.sh
-echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db" >> ~/start-rest.sh
+echo "export DATABASE_URL=postgres://db_user_ripple_rest:$db_user_ripple_restPW@localhost:5432/ripple_rest_db?native=true" >> ~/start-rest.sh
 echo "sudo -E -u restful /usr/bin/node server.js &" >> ~/start-rest.sh
 chmod +x ~/start-rest.sh
 sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
