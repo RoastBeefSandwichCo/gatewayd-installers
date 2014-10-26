@@ -119,6 +119,10 @@ npm install --save pg
 
 #create SSL certificates
 sudo /etc/init.d/ssl start
+
+#FIXME: figure out which grunt migrate is the redundant one!
+#run db migrations. Yes, again.
+grunt migrate
 ```
 
 ##CREATE AND INSTALL STARTUP SCRIPTS
