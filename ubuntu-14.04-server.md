@@ -53,6 +53,10 @@ sudo apt-get install -y git python-software-properties python g++ make libpq-dev
 sudo add-apt-repository -y ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get -y install nodejs
+
+#Eliminate need for sudo when using npm install
+sudo chown -R $USER /usr/local
+#FIXME: test and update npm install commands
 ```
 ##INSTALL AND CONFIGURE GATEWAYD AND POSTGRES
 
