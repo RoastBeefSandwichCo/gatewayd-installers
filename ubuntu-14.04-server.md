@@ -54,9 +54,13 @@ sudo add-apt-repository -y ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get -y install nodejs
 
-#Eliminate need for sudo when using npm install
-sudo chown -R $USER /usr/local
-#FIXME: test and update npm install commands
+#Eliminate need for sudo when using npm install. This is still being tested.
+#Further reading:
+#http://stackoverflow.com/questions/19352976/npm-modules-wont-install-globally-without-sudo
+#http://stackoverflow.com/questions/18212175/npm-yeoman-install-generator-angular-without-sudo/18277225#18277225
+sudo npm config set prefix ~/npm
+echo 'export PATH="$PATH:$HOME/npm/bin"' >> ~/.bashrc
+export PATH="$PATH:$HOME/npm/bin"
 ```
 ##INSTALL AND CONFIGURE GATEWAYD AND POSTGRES
 
