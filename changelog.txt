@@ -1,3 +1,4 @@
+gatewayd<->ripple-rest over ssl does NOT work. Other ssl uses (postgres, webapp) do work.
 testing fix to remove sudo requirement from "npm install -g"
 gatewayd<->ripple-rest over ssl works
 script overhauled. Initial root requirement removed. Sudo used.
