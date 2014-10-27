@@ -54,7 +54,7 @@ sudo add-apt-repository -y ppa:chris-lea/node.js
 sudo apt-get update
 sudo apt-get -y install nodejs
 
-#Eliminate need for sudo when using npm install. This is still being tested.
+#Eliminate need for sudo for npm global package installations.
 #Further reading:
 #http://stackoverflow.com/questions/19352976/npm-modules-wont-install-globally-without-sudo
 #http://stackoverflow.com/questions/18212175/npm-yeoman-install-generator-angular-without-sudo/18277225#18277225
@@ -72,8 +72,8 @@ git checkout cf1281d
 #aka v3.27.0
 
 #INSTALL gatewayd dependencies, pm2 separately, save
-sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
-sudo npm install --save
+npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
+npm install --save
 
 #CONFIGURE postgres, users, DBs
 #generate postgresql passwords
@@ -97,9 +97,6 @@ sed -i "s/\/ripple_gateway/\/gatewayd_db/g" ./config/config.js
 #FIXME: NO SSL sed -i "s/@localhost:5432\/gatewayd_db/@localhost:5432\/gatewayd_db?native=true/g" ./config/config.js
 cp lib/data/database.example.json lib/data/database.json
 sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
-
-#run db migrations
-grunt migrate
 ```
 
 ##INSTALL AND CONFIGURE RIPPLE-REST
@@ -127,10 +124,6 @@ npm install --save pg
 
 #create SSL certificates
 sudo /etc/init.d/ssl start
-
-#FIXME: figure out which grunt migrate is the redundant one!
-#run db migrations. Yes, again.
-grunt migrate
 ```
 
 ##CREATE AND INSTALL STARTUP SCRIPTS
@@ -180,7 +173,15 @@ bin/gateway generate_wallet
 export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db
 #cold wallet address=rhj3RL3SdxYVm8a7TXc7mbK2WoUBNMVuxz secret=ssN5m279DWhFw5KjFVBh2ijMwigPc
 #hot wallet:  address=rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3, secret=ssowTc8ba2PG9ADTxuzsD4TBzs34M
-#gatewayd must be running?
+
+#Must run grunt migrate here
+#Not sure why but running it at various other stages does not prevent the error #"/home/shell_user_gatewayd/gatewayd/lib/api/set_hot_wallet.js:22
+#      address: address.address,
+#                      ^
+#TypeError: Cannot read property 'address' of null
+#"
+grunt migrate
+
 bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxuzsD4TBzs34M
 
 #For obvious reasons, SET YOUR OWN ADDRESSES AND SECRETS! These are examples.
@@ -188,6 +189,9 @@ bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxu
 ```
 
 ##ISSUES/BROKEN:
-sed needs better regex so it can change existing passwords
-(just make a configurator script)
+ripple-rest api not accessible except via localhost
 
+##TO-DO:
+ - use output from wallet generator to edit gatewayd's config.js
+ - use sed to add currencies to gatewayd's config.js
+ - properly configure ssl for gatewayd<->postgresql
