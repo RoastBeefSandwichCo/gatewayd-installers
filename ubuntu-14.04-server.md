@@ -96,7 +96,7 @@ sed -i "s/postgres:password/db_user_gatewayd:$db_user_gatewaydPW/g" ./config/con
 sed -i "s/\/ripple_gateway/\/gatewayd_db/g" ./config/config.js
 #FIXME: NO SSL sed -i "s/@localhost:5432\/gatewayd_db/@localhost:5432\/gatewayd_db?native=true/g" ./config/config.js
 cp lib/data/database.example.json lib/data/database.json
-sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db/g" ./lib/data/database.json
+sed -i "s/DATABASE_URL/postgres:\/\/db_user_gatewayd:$db_user_gatewaydPW@localhost:5432\/gatewayd_db?native=true/g" ./lib/data/database.json
 ```
 
 ##INSTALL AND CONFIGURE RIPPLE-REST
@@ -141,7 +141,7 @@ sudo cp ~/start-rest.sh /usr/bin/start-rest && rm ~/start-rest.sh
 #CREATE gatewayd startup script
 echo '#!/bin/sh' > ~/start-gatewayd.sh
 echo "cd ~/gatewayd" >> ~/start-gatewayd.sh
-echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db" >> ~/start-gatewayd.sh
+echo "export DATABASE_URL=postgres://db_user_gatewayd:$db_user_gatewaydPW@localhost:5432/gatewayd_db?native=true" >> ~/start-gatewayd.sh
 echo "bin/gateway start &" >> ~/start-gatewayd.sh
 chmod +x ~/start-gatewayd.sh
 sudo cp ~/start-gatewayd.sh /usr/bin/start-gatewayd && rm ~/start-gatewayd.sh
@@ -189,9 +189,11 @@ bin/gateway set_hot_wallet rNXW9BmqufSRiZ5gUXMGmNFev3s8Lup4P3 ssowTc8ba2PG9ADTxu
 ```
 
 ##ISSUES/BROKEN:
-ripple-rest api not accessible except via localhost
+  - ripple-rest api not accessible except via localhost
+  - If the ripple-rest API is run over https, gatewayd cannot connect. You must remove the ssl section from ripple-rest/config.json. Sorry! Working on this.
 
 ##TO-DO:
  - use output from wallet generator to edit gatewayd's config.js
  - use sed to add currencies to gatewayd's config.js
  - properly configure ssl for gatewayd<->postgresql
+ - figure out what the deal is with grunt migrate
