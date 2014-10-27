@@ -1,3 +1,6 @@
+testing fix to remove sudo requirement from "npm install -g"
+gatewayd<->ripple-rest over ssl works
+script overhauled. Initial root requirement removed. Sudo used.
 changed early root commands to sudo
 ubuntu-14.04-server.txt renamed to ubuntu-14.04-server.md
 ubuntu-14.04-server.txt formatting
