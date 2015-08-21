@@ -8,7 +8,7 @@ IMPORTANT NOTE: Most of this you can just copypaste and run. Do it slowly, as so
 Finally: This is NOT a script. If you try to run it as such, it will stop when you change users. Start as non-root user and just run the commands.
 
 ##BEFORE YOU BEGIN!
-Download the ssl script
+Download the ssl script (or just clone this repo)
 ```
 sudo cp ssl.sh /etc/init.d/ssl
 sudo chmod +x /etc/init.d/ssl
@@ -65,10 +65,8 @@ export PATH="$PATH:$HOME/npm/bin"
 
 ```
 cd ~
-git clone https://github.com/ripple/gatewayd.git
-cd gatewayd/
-git checkout cf1281d
-#aka v3.27.0
+git clone https://github.com/RoastBeefSandwichCo/gatewayd.git
+#TODO: release tag
 
 #INSTALL gatewayd dependencies, pm2 separately, save
 npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
