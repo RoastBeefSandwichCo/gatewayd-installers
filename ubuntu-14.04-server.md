@@ -5,8 +5,7 @@ As such, some commentary may not make sense in the context of someone just tryin
 IMPORTANT NOTE: Most of this you can just copypaste and run. Do it slowly, as some lines will stop execution
 (like sudo apt-get install -y bunchofstuff).
 
-Finally: This is NOT a script. If you try to run it as such, it will stop when you change users. Start as root
-and just run the commands.
+Finally: This is NOT a script. If you try to run it as such, it will stop when you change users. Start as non-root user and just run the commands.
 
 ##BEFORE YOU BEGIN!
 Download the ssl script
