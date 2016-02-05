@@ -49,9 +49,16 @@ echo "pw=$SHELL_USER_GATEWAYDPW"
 sudo apt-get install -y git python-software-properties python g++ make libpq-dev software-properties-common postgresql postgresql-client
 
 #Add Node.js Repository for 0.1, update, install
-sudo add-apt-repository -y ppa:chris-lea/node.js
-sudo apt-get update
-sudo apt-get -y install nodejs
+#see https://github.com/nodesource/distributions
+# Using Ubuntu
+curl -sL https://deb.nodesource.com/setup_0.10 | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Using Debian, as root
+curl -sL https://deb.nodesource.com/setup_0.10 | bash -
+apt-get install -y nodejs
+
+
 
 #Eliminate need for sudo for npm global package installations.
 #Further reading:
