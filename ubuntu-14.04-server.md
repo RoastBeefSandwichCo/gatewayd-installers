@@ -1,4 +1,4 @@
-
+BROKEN! See https://github.com/RoastBeefSandwichCo/gatewayd-installers/issues/17
 This is a set of commands used to install gatewayd, ripple-coins and ripple-rest on ubuntu 14.04.1 Server
 It grew out of an effort to create a dockerfile and docker image of the same
 As such, some commentary may not make sense in the context of someone just trying to install gatewayd.
@@ -46,7 +46,7 @@ echo "pw=$SHELL_USER_GATEWAYDPW"
 #unset SHELL_USER_GATEWAYDPW
 #^THIS WIPES THE PASSWORD FROM SAVED ENVIRONMENT VARIABLE. Careful.
 
-sudo apt-get install -y git python-software-properties python g++ make libpq-dev software-properties-common postgresql postgresql-client
+sudo apt-get install -y git python-software-properties python g++ make libpq-dev software-properties-common postgresql postgresql-client curl
 
 #Add Node.js Repository for 0.1, update, install
 #see https://github.com/nodesource/distributions
@@ -64,9 +64,11 @@ sudo apt-get install -y nodejs
 #Further reading:
 #http://stackoverflow.com/questions/19352976/npm-modules-wont-install-globally-without-sudo
 #http://stackoverflow.com/questions/18212175/npm-yeoman-install-generator-angular-without-sudo/18277225#18277225
-sudo npm config set prefix ~/npm
-echo 'export PATH="$PATH:$HOME/npm/bin"' >> ~/.bashrc
-export PATH="$PATH:$HOME/npm/bin"
+#FIXME: #BROKEN! DO sudo for now
+#sudo npm config set prefix ~/npm
+#echo 'export PATH="$PATH:$HOME/npm/bin"' >> ~/.bashrc
+#export PATH="$PATH:$HOME/npm/bin"
+
 ```
 ##INSTALL AND CONFIGURE GATEWAYD AND POSTGRES
 
@@ -75,10 +77,11 @@ cd ~
 git clone https://github.com/RoastBeefSandwichCo/gatewayd.git
 cd gatewayd/
 git checkout a3cc109
-#aka v3.34.2.1
+#aka v3.34.2.1 - "RBSC base" ty RL ty crazyquark and others who've contributed!
 
 #INSTALL gatewayd dependencies, pm2 separately, save
-npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
+#FIXME: should not sudo, dammit!
+sudo npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
 npm install --save
 
 #CONFIGURE postgres, users, DBs
