@@ -72,10 +72,10 @@ export PATH="$PATH:$HOME/npm/bin"
 
 ```
 cd ~
-git clone https://github.com/ripple/gatewayd.git
+git clone https://github.com/RoastBeefSandwichCo/gatewayd.git
 cd gatewayd/
-git checkout cf1281d
-#aka v3.27.0
+git checkout a3cc109
+#aka v3.34.2.1
 
 #INSTALL gatewayd dependencies, pm2 separately, save
 npm install --global pg grunt grunt-cli forever db-migrate jshint pm2@0.8.15
