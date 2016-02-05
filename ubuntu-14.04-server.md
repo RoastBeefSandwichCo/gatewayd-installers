@@ -56,7 +56,7 @@ sudo apt-get install -y nodejs
 
 # Using Debian, as root
 curl -sL https://deb.nodesource.com/setup_0.10 | sudo bash -
-apt-get install -y nodejs
+sudo apt-get install -y nodejs
 
 
 
